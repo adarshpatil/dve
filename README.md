@@ -15,16 +15,16 @@ Dvé is a memory system architecture to improve the reliability and performance 
 
 
 # Repository contents
-1.  gem5 based implementation of Coherent Replication (forked from VANDAL/SynchroTrace-gem5)\
+1.  gem5 based implementation of Coherent Replication (forked from [VANDAL/SynchroTrace-gem5](https://github.com/VANDAL/SynchroTrace-gem5))\
 	The repo contains implementation of the baseline, proposed protocols and a variant of Intel's Mirroring implementation.
 	 - numa-baseline: multi-socket NUMA baseline configuration
-	 - deny-list protocol implementation
+	 - deny-based protocol implementation
 	 - allow-based protocol implementation
-	 - intel-intel-ch-replication:  Intel's Address Range Partial Mirroring implementation with read requests load balanced between both channels (requests are alternated between channels)
+	 - intel-intel-ch-replication: An extention of Intel's Address Range Partial Mirroring implementation with read requests load balanced between both channels (requests are alternated between channels)
 
- 2. Trace generator (forked from VANDAL/prism)
+ 2. Trace generator (forked from [VANDAL/prism](https://github.com/VANDAL/prism))
 
-3. Dvé coherence protocol appendix (generated using ProtoGen)
+3. Dvé coherence protocol appendix (generated using [ProtoGen](https://github.com/icsa-caps/ProtoGen))
 
 
 --------------------------------------------------------------
