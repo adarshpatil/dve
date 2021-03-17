@@ -6,7 +6,7 @@ Dvé is a memory system architecture to improve the reliability and performance 
 
 
 # Features:
-- Mirrors memory on two different sockets of a multi socket NUMA system
+- Replicates memory on two different sockets of a multi socket NUMA system
 - Uses cache coherence protocols (allow-based and deny-based) to provide Coherent Replication
 - Protocol Optimizations to further improve performance 
 	- Speculative replica access
