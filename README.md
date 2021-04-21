@@ -4,7 +4,7 @@
 
 Dvé is a memory system architecture to improve the reliability and performance of DRAM main memory. 
 
-**Full project details at [https://adar.sh/dve](https://adar.sh/dve)**
+**Full project details at [https://adar.sh/dve](https://adar.sh/dve) and in our upcoming ISCA paper. If you are using Dvé for your work, please cite: **
 
 # Features:
 - Replicates memory on two different sockets of a multi socket NUMA system
