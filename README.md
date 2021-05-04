@@ -4,6 +4,7 @@
 
 Dvé is a memory system architecture to improve the reliability and performance of DRAM main memory. 
 
+**Full project details at [https://adar.sh/dve](https://adar.sh/dve) and in our upcoming ISCA paper. If you are using Dvé for your work, please cite: **
 
 # Features:
 - Replicates memory on two different sockets of a multi socket NUMA system
@@ -29,5 +30,5 @@ Dvé is a memory system architecture to improve the reliability and performance 
 4. Murphi [model]() for allow-based and deny-based protocol (generated using [ProtoGen](https://github.com/icsa-caps/ProtoGen))
 
 --------------------------------------------------------------
-The project title is derived from the Sankrit word (द्वे) which means "the two",
+The title of the project is derived from the Sankrit word (द्वे) which means "the two",
 referring here to the dual benefits of replication.
