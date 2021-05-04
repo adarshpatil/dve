@@ -25,9 +25,9 @@ Dvé is a memory system architecture to improve the reliability and performance 
 
 2. Trace generator (forked from [VANDAL/prism](https://github.com/VANDAL/prism))
 
-3. Coherence protocol [specification](https://github.com/adarshpatil/dve/blob/master/Dve-ISCA21-Appendix.pdf) 
+3. Coherence protocol [specification](https://github.com/adarshpatil/dve/blob/master/Dve-ISCA21-Appendix.pdf) in table format.
 
-4. Murphi [model]() for allow-based and deny-based protocol (generated using [ProtoGen](https://github.com/icsa-caps/ProtoGen))
+4. Murphi [model](https://github.com/adarshpatil/dve/tree/master/murphi-model) for allow-based and deny-based protocol (generated using [ProtoGen](https://github.com/icsa-caps/ProtoGen))
 
 --------------------------------------------------------------
 The title of the project is derived from the Sankrit word (द्वे) which means "the two",
