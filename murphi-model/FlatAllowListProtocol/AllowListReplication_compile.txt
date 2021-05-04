@@ -1,0 +1,23 @@
+/home/tux/Desktop/murphi/src/mu -b AllowListReplication.m
+
+===========================================================================
+Caching Murphi Release 5.4.9.1
+Finite-state Concurrent System Compiler.
+
+Caching Murphi Release 5.4.9.1 is based on Murphi release 3.1.
+Caching Murphi Release 5.4.9.1 :
+Copyright (C) 2009 - 2012 by Sapienza University of Rome.
+Murphi Release 3.1 :
+Copyright (C) 1992 - 1999 by the Board of Trustees of
+Leland Stanford Junior University.
+===========================================================================
+Call with the -l flag or read the license file for terms
+and conditions of use.
+Run this program with "-h" for the list of options.
+Bugs, questions, and comments should be directed to
+"melatti@di.uniroma1.it".
+
+CMurphi compiler last compiled date: Jun  2 2017
+===========================================================================
+Code generated in file AllowListReplication.cpp
+g++ -O2 -march=native      -o AllowListReplication AllowListReplication.cpp -I/home/tux/Desktop/murphi/include

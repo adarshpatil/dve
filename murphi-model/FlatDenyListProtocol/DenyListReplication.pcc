@@ -1,0 +1,366 @@
+/*
+  Copyright (c) 2021.  Nicolai Oswald
+  Copyright (c) 2021.  University of Edinburgh
+  All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are
+  met: redistributions of source code must retain the above copyright
+  notice, this list of conditions and the following disclaimer;
+  redistributions in binary form must reproduce the above copyright
+  notice, this list of conditions and the following disclaimer in the
+  documentation and/or other materials provided with the distribution;
+  neither the name of the copyright holders nor the names of its
+  contributors may be used to endorse or promote products derived from
+  this software without specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/* Liveness: This protocol does not guarantee liveness. The home directory can continue to access the data block without
+     granting access to the replica directories. Additional mechanisms are required to ensure quality of service.
+   LLC Access: The LLC accesses can be classified as load, store and evicts. Assuming an inclusive cache hierarchy,
+     HieraGen can automatically generated a correct hierarchical replication protocol that revokes access permissions
+     from the LLC.
+   Dependency: ProtoGen v3
+*/
+
+# NrCaches 1
+
+Network { Ordered fwd;   //FwdGetS, FwdGetM, Inv, PutAck
+          Ordered resp;  // Data, InvAck
+          Ordered req;   //GetS, GetM, PutM
+          };
+
+Cache {
+    State I;
+    Data cl;
+} set[NrCaches] cache;
+
+Directory {
+    State I;
+    Data cl;
+    set[NrCaches] ID sharers;
+    ID owner;
+} directory;
+
+Message Request{};
+
+Message Ack{};
+
+Message Resp{};
+
+Message RespAck{
+    int[0..NrCaches] acksExpected;
+};
+
+Message Data_WB{
+    Data cl;
+};
+
+Message Data_Resp{
+    Data cl;
+};
+
+Architecture cache {
+
+    Stable{I, S, M, RM}
+
+    // I ////////////////////////////////////////////////////////
+    Process(I, load, S){}
+
+    Process(I, store, State){
+        msg = Request(GetM, ID, directory.ID);
+        req.send(msg);
+
+        await{
+            when GetM_Ack_D:
+                State = M;
+                break;
+
+        }
+    }
+
+    Process(I, Fwd_GetM, State){
+        msg = Data_WB(WB, Fwd_GetM.src, directory.ID, cl);
+        resp.send(msg);
+
+        await{
+            when WB_Ack:
+                State = RM;
+                break;
+        }
+    }
+
+    Process(I, WB, I){
+        cl = WB.cl;
+        msg = Resp(WB_Ack, ID, directory.ID);
+        resp.send(msg);
+    }
+
+    // S ////////////////////////////////////////////////////////
+    Process(S, load, S){}
+
+    Process(S, store, State){
+        msg = Request(GetM, ID, directory.ID);
+        req.send(msg);
+
+        await{
+            when GetM_Ack_D:
+                State = M;
+                break;
+
+        }
+    }
+
+    Process(S, Fwd_GetM, State){
+        msg = Data_WB(WB, Fwd_GetM.src, directory.ID, cl);
+        resp.send(msg);
+
+        await{
+            when WB_Ack:
+                State = RM;
+                break;
+        }
+    }
+
+    Process(S, WB, S){
+        cl = WB.cl;
+        msg = Resp(WB_Ack, ID, directory.ID);
+        resp.send(msg);
+    }
+
+    Process(S, evict, I){}
+
+    // M ////////////////////////////////////////////////////////
+    Process(M, load){}
+
+    Process(M, store, M){}
+
+    Process(M, Fwd_GetM, State){
+        msg = Data_WB(WB, Fwd_GetM.src, directory.ID, cl);
+        resp.send(msg);
+
+        await{
+            when WB_Ack:
+                State = RM;
+                break;
+        }
+    }
+
+    Process(M, Fwd_GetS, State){
+        msg = Data_WB(WB, Fwd_GetS.src, directory.ID, cl);
+        resp.send(msg);
+
+        await{
+            when WB_Ack:
+                State = S;
+                break;
+        }
+    }
+
+    Process(M, evict, State){
+        msg = Data_WB(PutM, ID, directory.ID, cl);
+        req.send(msg);
+
+        await{
+            when Put_Ack:
+                State = I;
+                break;
+        }
+    }
+
+    // RM ///////////////////////////////////////////////////////
+    Process(RM, load, State){
+        msg = Request(GetS, ID, directory.ID);
+        req.send(msg);
+
+        await{
+            when GetS_Ack:
+                State = S;
+                break;
+
+        }
+    }
+
+    Process(RM, store, State){
+        msg = Request(GetM, ID, directory.ID);
+        req.send(msg);
+
+        await{
+            when GetM_Ack_D:
+                State = M;
+                break;
+
+        }
+    }
+
+    Process(RM, WB, I){
+        cl = WB.cl;
+        msg = Resp(WB_Ack, ID, directory.ID);
+        resp.send(msg);
+    }
+
+    Process(RM, evict, RM){}
+
+}
+
+Architecture directory {
+
+    Stable{I, S, M, RM}
+
+    // I ////////////////////////////////////////////////////////
+    Process(I, load, S){}
+
+    Process(I, store, State){
+        msg = Request(Fwd_GetM, ID, cache);
+        fwd.send(msg);
+
+        await{
+            when WB:
+                cl = WB.cl;
+                msg = Resp(WB_Ack, ID, cache);
+                resp.send(msg);
+                owner = ID;
+                State = M;
+                break;
+        }
+    }
+
+    Process(I, GetM, RM){
+        msg = Resp(GetM_Ack_D, ID, GetM.src);
+        fwd.send(msg);
+        owner = GetM.src;
+    }
+
+    // I ////////////////////////////////////////////////////////
+    Process(S, load, S){}
+
+    Process(S, store, State){
+        msg = Request(Fwd_GetM, ID, cache);
+        fwd.send(msg);
+
+        await{
+            when WB:
+                cl = WB.cl;
+                msg = Resp(WB_Ack, ID, cache);
+                resp.send(msg);
+                owner = ID;
+                State = M;
+                break;
+        }
+    }
+
+    Process(S, GetM, RM){
+        msg = Resp(GetM_Ack_D, ID, GetM.src);
+        fwd.send(msg);
+        owner = GetM.src;
+    }
+
+    Process(S, evict, I){}
+
+    // RM ////////////////////////////////////////////////////////
+    Process(RM, load, State){
+        msg = Request(Fwd_GetS, ID, owner);
+        fwd.send(msg);
+
+        await{
+            when WB:
+                cl = WB.cl;
+                msg = Resp(WB_Ack, ID, owner);
+                resp.send(msg);
+                owner = ID;
+                State = S;
+                break;
+        }
+    }
+
+    Process(RM, store, State){
+        msg = Request(Fwd_GetM, ID, owner);
+        fwd.send(msg);
+
+        await{
+            when WB:
+                cl = WB.cl;
+                msg = Resp(WB_Ack, ID, owner);
+                resp.send(msg);
+                owner = ID;
+                State = M;
+                break;
+        }
+    }
+
+
+    Process(RM, PutM){
+       msg = Ack(Put_Ack, ID, PutM.src);
+       fwd.send(msg);
+
+       if owner == PutM.src{
+            cl = PutM.cl;
+            State=I;
+       }
+    }
+
+    Process(RM, evict){}
+
+    // M ////////////////////////////////////////////////////////
+
+    Process(M, load, M){}
+
+    Process(M, store, M){}
+
+    Process(M, GetM, State){
+        // Update remote locations memory
+        msg = Data_WB(WB, ID, GetM.src, cl);
+        fwd.send(msg);
+        owner = GetM.src;
+        await{
+            when WB_Ack:
+                // Remote update complete
+                msg = Resp(GetM_Ack_D, ID, WB_Ack.src);
+                fwd.send(msg);
+                State = RM;
+                break;
+        }
+    }
+
+    Process(M, GetS, State){
+        // Update remote locations memory
+        msg = Data_WB(WB, ID, GetS.src, cl);
+        fwd.send(msg);
+        owner = ID;
+        await{
+            when WB_Ack:
+                // Remote update complete
+                msg = Resp(GetS_Ack, ID, WB_Ack.src);
+                fwd.send(msg);
+                // Downgrade the own cache copy
+                State = S;
+                break;
+        }
+    }
+
+    Process(M, evict, State){
+        // Update remote locations memory
+        msg = Data_WB(WB, ID, cache, cl);
+        fwd.send(msg);
+
+        await{
+            when WB_Ack:
+                // Remote update complete
+                State = I;
+                break;
+        }
+    }
+
+}

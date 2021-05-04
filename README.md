@@ -22,10 +22,11 @@ Dvé is a memory system architecture to improve the reliability and performance 
 	 - allow-based protocol implementation
 	 - intel-intel-ch-replication: An extention of Intel's Address Range Partial Mirroring implementation with read requests load balanced between both channels (requests are alternated between channels)
 
- 2. Trace generator (forked from [VANDAL/prism](https://github.com/VANDAL/prism))
+2. Trace generator (forked from [VANDAL/prism](https://github.com/VANDAL/prism))
 
-3. Dvé coherence protocol appendix (generated using [ProtoGen](https://github.com/icsa-caps/ProtoGen))
+3. Coherence protocol [specification](https://github.com/adarshpatil/dve/blob/master/Dve-ISCA21-Appendix.pdf) 
 
+4. Murphi [model]() for allow-based and deny-based protocol (generated using [ProtoGen](https://github.com/icsa-caps/ProtoGen))
 
 --------------------------------------------------------------
 The project title is derived from the Sankrit word (द्वे) which means "the two",

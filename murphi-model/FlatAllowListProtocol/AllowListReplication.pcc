@@ -1,0 +1,401 @@
+/*
+  Copyright (c) 2021.  Nicolai Oswald
+  Copyright (c) 2021.  University of Edinburgh
+  All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are
+  met: redistributions of source code must retain the above copyright
+  notice, this list of conditions and the following disclaimer;
+  redistributions in binary form must reproduce the above copyright
+  notice, this list of conditions and the following disclaimer in the
+  documentation and/or other materials provided with the distribution;
+  neither the name of the copyright holders nor the names of its
+  contributors may be used to endorse or promote products derived from
+  this software without specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+# NrCaches 1
+
+Network { Ordered fwd;   //FwdGetS, FwdGetM, Inv, PutAck
+          Ordered resp;  // Data, InvAck
+          Ordered req;   //GetS, GetM, PutM
+          };
+
+Cache {
+    State I;
+    Data cl;
+    int[0..NrCaches] acksReceived = 0;
+    int[0..NrCaches] acksExpected = 0;
+} set[NrCaches] cache;
+
+Directory {
+    State I;
+    Data cl;
+    set[NrCaches] ID sharers;
+    ID owner;
+} directory;
+
+Message Request{};
+
+Message Ack{};
+
+Message Resp{};
+
+Message RespAck{
+    int[0..NrCaches] acksExpected;
+};
+
+Message Data_WB{
+    Data cl;
+};
+
+Message Data_Resp{
+    Data cl;
+};
+
+Architecture cache {
+
+    Stable{I, S, M}
+
+    // I ////////////////////////////////////////////////////////
+    Process(I, load, State){
+        msg = Request(GetS, ID, directory.ID);
+        req.send(msg);
+
+        await{
+            when GetS_Ack:
+                State = S;
+                break;
+        }
+    }
+
+    Process(I, store, State){
+        msg = Request(GetM, ID, directory.ID);
+        req.send(msg);
+        acksReceived = 0;
+
+        await{
+            when GetM_Ack_D:
+                State = M;
+                break;
+
+            when GetM_Ack_AD:
+                acksExpected = GetM_Ack_AD.acksExpected;
+
+                if acksExpected == acksReceived{
+                    State = M;
+                    break;
+                }
+
+                await{
+                    when Inv_Ack:
+                        acksReceived = acksReceived + 1;
+
+                        if acksExpected == acksReceived{
+                            State = M;
+                            break;
+                        }
+                    }
+
+            when Inv_Ack:
+                acksReceived = acksReceived + 1;
+
+        }
+    }
+
+    Process(I, WB, I){
+        cl = WB.cl;
+        msg = Resp(WB_Ack, ID, directory.ID);
+        resp.send(msg);
+    }
+
+    // S ////////////////////////////////////////////////////////
+    Process(S, load, S){}
+
+    Process(S, store, State){
+        msg = Request(GetM, ID, directory.ID);
+        req.send(msg);
+        acksReceived = 0;
+
+        await{
+            when GetM_Ack_D:
+                State = M;
+                break;
+
+            when GetM_Ack_AD:
+                acksExpected = GetM_Ack_AD.acksExpected;
+
+                if acksExpected == acksReceived{
+                    State = M;
+                    break;
+                }
+
+                await{
+                    when Inv_Ack:
+                        acksReceived = acksReceived + 1;
+
+                        if acksExpected == acksReceived{
+                            State = M;
+                            break;
+                        }
+                    }
+
+            when Inv_Ack:
+                acksReceived = acksReceived + 1;
+        }
+    }
+
+    Process(S, evict, State){
+        msg = Data_WB(PutS, ID, directory.ID, cl);
+        req.send(msg);
+
+        await{
+            when Put_Ack:
+                State = I;
+                break;
+        }
+    }
+
+    Process(S, Inv, I){
+        msg = Ack(Inv_Ack, ID, Inv.src);
+        resp.send(msg);
+    }
+
+
+    // M ////////////////////////////////////////////////////////
+    Process(M, load){}
+
+    Process(M, store, M){}
+
+    Process(M, Fwd_GetM, State){
+        msg = Data_WB(WB, Fwd_GetM.src, directory.ID, cl);
+        resp.send(msg);
+
+        await{
+            when WB_Ack:
+                State = I;
+                break;
+        }
+    }
+
+    Process(M, Fwd_GetS, State){
+        msg = Data_WB(WB, Fwd_GetS.src, directory.ID, cl);
+        resp.send(msg);
+
+        await{
+            when WB_Ack:
+                State = S;
+                break;
+        }
+
+    }
+
+    Process(M, evict, State){
+        msg = Data_WB(PutM, ID, directory.ID, cl);
+        req.send(msg);
+
+        await{
+            when Put_Ack:
+                State = I;
+                break;
+        }
+    }
+}
+
+Architecture directory {
+
+    Stable{I, S, M, RM}
+
+    // I ////////////////////////////////////////////////////////
+    Process(I, load, S){}
+
+    Process(I, store, M){}
+
+    Process(I, GetS, S){
+       sharers.add(GetS.src);
+       msg = Resp(GetS_Ack, ID, GetS.src);
+       resp.send(msg);
+    }
+
+    Process(I, GetM, RM){
+        msg = Resp(GetM_Ack_D, ID, GetM.src);
+        resp.send(msg);
+        owner = GetM.src;
+    }
+
+    // S ////////////////////////////////////////////////////////
+    Process(S, load, S){}
+
+    Process(S, store, M){
+        if !(sharers.count() == 0) {
+            msg = Ack(Inv, ID, ID);
+            fwd.mcast(msg, sharers);
+            await{
+                when Inv_Ack:
+                    sharers.del(Inv_Ack.src);
+                    if sharers.count() == 0{
+                        State = M;
+                        break;
+                    }
+                }
+        } else {
+            State = M;
+            break;
+        }
+    }
+
+    Process(S, GetS){
+       sharers.add(GetS.src);
+       msg = Resp(GetS_Ack, ID, GetS.src);
+       resp.send(msg);
+    }
+
+    Process(S, GetM, State){
+       if sharers.contains(GetM.src){
+           sharers.del(GetM.src);
+       }
+
+       if sharers.count() == 0{
+            msg = Resp(GetM_Ack_D, ID, GetM.src);
+            resp.send(msg);
+            owner = GetM.src;
+            sharers.clear();
+            State=RM;
+       } else{
+           msg = RespAck(GetM_Ack_AD, ID, GetM.src, sharers.count());
+           resp.send(msg);
+           msg = Ack(Inv, GetM.src, GetM.src);
+           fwd.mcast(msg, sharers);
+           owner = GetM.src;
+           sharers.clear();
+           State=RM;
+       }
+
+    }
+
+    Process(S, PutS){
+       msg = Ack(Put_Ack, ID, PutS.src);
+       fwd.send(msg);
+       sharers.del(PutS.src);
+
+       if sharers.count() == 0{
+            State=I;
+            break;
+       }
+    }
+
+    Process(S, evict, State){
+       if sharers.count() == 0{
+            State=I;
+       }
+    }
+
+    // RM ////////////////////////////////////////////////////////
+    Process(RM, load, State){
+        msg = Request(Fwd_GetS, ID, owner);
+        req.send(msg);
+
+        await{
+            when WB:
+                sharers.add(owner);
+                cl = WB.cl;
+                msg = Resp(WB_Ack, ID, owner);
+                resp.send(msg);
+                // The home directory becomes the owner again
+                owner = ID;
+                State = S;
+                break;
+        }
+    }
+
+    Process(RM, store, State){
+        msg = Request(Fwd_GetM, ID, owner);
+        req.send(msg);
+
+        await{
+            when WB:
+                cl = WB.cl;
+                msg = Resp(WB_Ack, ID, owner);
+                resp.send(msg);
+                owner = ID;
+                State = M;
+                break;
+        }
+    }
+
+
+    Process(RM, PutM){
+       msg = Ack(Put_Ack, ID, PutM.src);
+       fwd.send(msg);
+
+       if owner == PutM.src{
+            cl = PutM.cl;
+            State=I;
+       }
+    }
+
+    Process(RM, evict){}
+
+    // M ////////////////////////////////////////////////////////
+
+    Process(M, load, M){}
+
+    Process(M, store, M){}
+
+    Process(M, GetM, State){
+        // Update remote locations memory
+        msg = Data_WB(WB, ID, GetM.src, cl);
+        fwd.send(msg);
+        owner = GetM.src;
+        await{
+            when WB_Ack:
+                // Remote update complete
+                msg = Resp(GetM_Ack_D, ID, WB_Ack.src);
+                resp.send(msg);
+                State = RM;
+                break;
+        }
+    }
+
+    Process(M, GetS, State){
+        // Update remote locations memory
+        msg = Data_WB(WB, ID, GetM.src, cl);
+        fwd.send(msg);
+        sharers.add(GetS.src);
+        await{
+            when WB_Ack:
+                // Remote update complete
+                msg = Resp(GetS_Ack, ID, GetS.src);
+                resp.send(msg);
+                State = S;
+                break;
+        }
+    }
+
+    Process(M, evict, State){
+        // Update remote locations memory
+        msg = Data_WB(WB, ID, cache, cl);
+        fwd.send(msg);
+
+        await{
+            when WB_Ack:
+                // Remote update complete
+                State = I;
+                break;
+        }
+    }
+
+}
