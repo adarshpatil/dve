@@ -1,6 +1,5 @@
 
-
-# Dvé
+# ![Dve thumb](http://timewarp.adarshpatil.in/images/projects/dve/dve-thumb.png) Dvé: Coherent Replication Protocol
 
 Dvé is a memory system architecture to improve the reliability and performance of DRAM main memory. 
 
