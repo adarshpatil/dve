@@ -8,7 +8,7 @@ Dvé is a memory system architecture to improve the reliability and performance 
 # Features of Dvé:
 - Replicates memory on two different sockets of a multi socket NUMA system
 ![NUMA Replication](http://timewarp.adarshpatil.in/images/projects/dve/numa-replication.jpg)
-- Modifies NUMA cache coherence communication by introducing a new replica directory to permit local replica access 
+- Modifies NUMA cache coherence communication by introducing replica directory to permit local replica access 
 ![Coherent Replication](http://timewarp.adarshpatil.in/images/projects/dve/coherent-replication.jpg) <br/>
 <sub>(Figure shows coherence communications in (a) Baseline NUMA (b) Dvé (c) Logical View)</sub>
 - Proposes two protocol families — allow-based and deny-based — to achieve Coherent Replication 
