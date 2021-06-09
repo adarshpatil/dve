@@ -12,7 +12,7 @@ Dvé is a memory system architecture to improve the reliability and performance 
 	year = {2021},
 	publisher = {IEEE Press},
 	booktitle = {Proceedings of the ACM/IEEE 48th Annual International Symposium on Computer Architecture},
-	pages = {254–267},
+	pages = {526–539},
 	numpages = {14},
 	keywords = {Memory Systems, DRAM, Reliability, Coherence},
 	location = {Virtual Event},
