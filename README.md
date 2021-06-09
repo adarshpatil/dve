@@ -3,7 +3,22 @@
 
 Dvé is a memory system architecture to improve the reliability and performance of DRAM main memory. This repository contains all artifacts used to experimentally evaluate Dvé.
 
-**Full project details at [https://adar.sh/dve](https://adar.sh/dve) and in our upcoming ISCA '21 paper. If you are using Dvé for your work, please cite:**
+**More details in the [ISCA '21 paper](https://conferences.computer.org/iscapub/pdfs/ISCA2021-4ghucdBnCWYB7ES2Pe4YdT/333300a526/333300a526.pdf) and at [https://adar.sh/dve](https://adar.sh/dve). If you are using Dvé for your work, please cite:**
+
+```
+@inproceedings{dve-isca21,
+	author = {Patil, Adarsh and Nagarajan, Vijay and Balasubramonian, Rajeev and Oswald, Nicolai},
+	title = {Dvé: Improving DRAM Reliability andPerformance On-Demand via Coherent Replication},
+	year = {2021},
+	publisher = {IEEE Press},
+	booktitle = {Proceedings of the ACM/IEEE 48th Annual International Symposium on Computer Architecture},
+	pages = {254–267},
+	numpages = {14},
+	keywords = {Memory Systems, DRAM, Reliability, Coherence},
+	location = {Virtual Event},
+	series = {ISCA '21}
+}
+```
 
 # Features of Dvé:
 - Replicates memory on two different sockets of a multi socket NUMA system
