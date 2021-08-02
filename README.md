@@ -3,7 +3,7 @@
 
 Dvé is a memory system architecture to improve the reliability and performance of DRAM main memory. This repository contains all artifacts used to experimentally evaluate Dvé.
 
-**More details in the [ISCA '21 paper](https://conferences.computer.org/iscapub/pdfs/ISCA2021-4ghucdBnCWYB7ES2Pe4YdT/333300a526/333300a526.pdf) and at [https://adar.sh/dve](https://adar.sh/dve). If you are using Dvé for your work, please cite:**
+**More details in the [ISCA '21 paper](https://www.cs.utah.edu/~rajeev/pubs/isca21.pdf) and at [https://adar.sh/dve](https://adar.sh/dve). If you are using Dvé for your work, please cite:**
 
 ```
 @inproceedings{dve-isca21,
