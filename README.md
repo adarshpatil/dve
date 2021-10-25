@@ -8,7 +8,7 @@ Dvé is a memory system architecture to improve the reliability and performance 
 ```
 @inproceedings{dve-isca21,
 	author = {Patil, Adarsh and Nagarajan, Vijay and Balasubramonian, Rajeev and Oswald, Nicolai},
-	title = {Dvé: Improving DRAM Reliability andPerformance On-Demand via Coherent Replication},
+	title = {Dvé: Improving DRAM Reliability and Performance On-Demand via Coherent Replication},
 	year = {2021},
 	publisher = {IEEE Press},
 	booktitle = {Proceedings of the ACM/IEEE 48th Annual International Symposium on Computer Architecture},
