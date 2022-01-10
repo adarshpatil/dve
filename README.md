@@ -47,6 +47,9 @@ Dvé is a memory system architecture to improve the reliability and performance 
 
 4. [Murphi model](https://github.com/adarshpatil/dve/tree/master/murphi-model) for allow-based and deny-based protocol (generated using [ProtoGen](https://github.com/icsa-caps/ProtoGen))
 
+# Additional Material
+Full Protocol Model Checking and Verification files are available in this [github source repo](https://github.com/Errare-humanum-est/Dve_Protocol_Model_Check)
+
 --------------------------------------------------------------
 The title of the project is derived from the Sankrit word (द्वे) which means "the two",
 referring here to the dual benefits of replication.
