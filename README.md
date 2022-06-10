@@ -1,24 +1,7 @@
 
 # ![Dve thumb](http://timewarp.adarshpatil.in/images/projects/dve/dve-thumb.png) Dvé: Coherent Replication Protocol
 
-Dvé is a memory system architecture to improve the reliability and performance of DRAM main memory. This repository contains all artifacts used to experimentally evaluate Dvé.
-
-**More details in the [ISCA '21 paper](https://www.cs.utah.edu/~rajeev/pubs/isca21.pdf) and at [https://adar.sh/dve](https://adar.sh/dve). If you are using Dvé for your work, please cite:**
-
-```
-@inproceedings{dve-isca21,
-	author = {Patil, Adarsh and Nagarajan, Vijay and Balasubramonian, Rajeev and Oswald, Nicolai},
-	title = {Dvé: Improving DRAM Reliability and Performance On-Demand via Coherent Replication},
-	year = {2021},
-	publisher = {IEEE Press},
-	booktitle = {Proceedings of the ACM/IEEE 48th Annual International Symposium on Computer Architecture},
-	pages = {526–539},
-	numpages = {14},
-	keywords = {Memory Systems, DRAM, Reliability, Coherence},
-	location = {Virtual Event},
-	series = {ISCA '21}
-}
-```
+Dvé is a memory system architecture to improve the reliability and performance of DRAM main memory. This repository contains all artifacts used to experimentally evaluate Dvé [[ISCA '21 paper]](https://www.cs.utah.edu/~rajeev/pubs/isca21.pdf). 
 
 # Features of Dvé:
 - Replicates memory on two different sockets of a multi socket NUMA system
@@ -48,8 +31,28 @@ Dvé is a memory system architecture to improve the reliability and performance 
 4. [Murphi model](https://github.com/adarshpatil/dve/tree/master/murphi-model) for allow-based and deny-based protocol (generated using [ProtoGen](https://github.com/icsa-caps/ProtoGen))
 
 # Additional Material
-Full Protocol Model Checking and Verification files are available in this [github source repo](https://github.com/Errare-humanum-est/Dve_Protocol_Model_Check)
+- Full Protocol Model Checking and Verification files are available in this [github source repo](https://github.com/Errare-humanum-est/Dve_Protocol_Model_Check)
 
+- FAQ, talk videos, slides - [https://adar.sh/dve](https://adar.sh/dve)
+
+# Referencing our work
+
+If you are using Dvé for your work, please cite:**
+
+```
+@inproceedings{dve-isca21,
+	author = {Patil, Adarsh and Nagarajan, Vijay and Balasubramonian, Rajeev and Oswald, Nicolai},
+	title = {Dvé: Improving DRAM Reliability and Performance On-Demand via Coherent Replication},
+	year = {2021},
+	publisher = {IEEE Press},
+	booktitle = {Proceedings of the ACM/IEEE 48th Annual International Symposium on Computer Architecture},
+	pages = {526–539},
+	numpages = {14},
+	keywords = {Memory Systems, DRAM, Reliability, Coherence},
+	location = {Virtual Event},
+	series = {ISCA '21}
+}
+```
 --------------------------------------------------------------
 The title of the project is derived from the Sankrit word (द्वे) which means "the two",
 referring here to the dual benefits of replication.
